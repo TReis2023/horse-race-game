@@ -2,7 +2,7 @@
 import HelloWorld from './components/HelloWorld.vue'
 import { useRaceStore } from '../stores/raceStore';
 
-const raceStore = useRaceStore()
+
 
 </script>
 
