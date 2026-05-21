@@ -1,0 +1,12 @@
+import {defineStore} from "pinia";
+
+
+export const useRaceStore = defineStore(
+    'race',
+    {
+        state: () => ({
+            horses: [],
+            distances: [1200, 1400, 1600, 1800, 2000, 2200]
+        })
+    }
+),
