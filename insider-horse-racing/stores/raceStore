@@ -1,5 +1,30 @@
 import {defineStore} from "pinia";
 
+const horseColors = [
+    {name: "Red", value: "#FB2C36"},
+    {name: "Orange", value: "#FF692A"},
+    {name: "Yellow", value: "#FFDF20"},
+    {name: "Lime", value: "#BBF451"},
+    {name: "Green", value: "#2AA63E"},
+    {name: "Cyan", value: "#46ECD5"},
+    {name: "Blue", value: "#155DFC"},
+    {name: "Purple", value: "#7008E7"},
+    {name: "Pink", value: "#ED6AFF"},
+    {name: "Brown", value: "#7E2A0C"},
+    {name: "White", value: "#e9f4ff"},
+    {name: "Gray", value: "#90A1B9"},
+    {name: "Black", value: "#0F172B"},
+]
+
+
+function generateHorse(i){
+    return{
+        id: i,
+        condition: Math.floor(Math.random() * 100) + 1,
+        color: horseColors[Math.floor(Math.random() * 13)]
+    }
+}
+
 
 export const useRaceStore = defineStore(
     'race',
@@ -7,6 +32,17 @@ export const useRaceStore = defineStore(
         state: () => ({
             horses: [],
             distances: [1200, 1400, 1600, 1800, 2000, 2200],
-        })
+            currentRace: 0,
+            leaderbord: [],
+        }),
+
+        actions: {
+            generateHorses() {
+                this.horses = [] //Clear the existing horses
+                for(let i = 0; i < 20; i++){
+                    this.horses.push(generateHorse(i))
+                }
+            }
+        }
     }
 )
