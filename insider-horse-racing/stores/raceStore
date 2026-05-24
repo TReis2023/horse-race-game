@@ -25,6 +25,34 @@ function generateHorse(i){
     }
 }
 
+function simulateHorseRace(horse, distance){
+    const edgePhase = 250
+    const middlePhase = distance - edgePhase * 2
+    const edgeSpeed = horse.condition * 0.5 + Math.random() * 150
+    const middleSpeed = 1.5 * (horse.condition) + 0.5 * (Math.random() * 100)
+    const finishTime = (middlePhase / middleSpeed) + ((2 * edgePhase) / edgeSpeed)
+
+    return{
+        ...horse,
+        finishTime,
+    }
+}
+
+function simulateRace(racingHorses, distance, raceId){
+    let raceResult = []
+    for(let i = 0; i < racingHorses.length; i++){
+        raceResult.push(simulateHorseRace(racingHorses[i], distance))
+    }
+    raceResult.sort((a, b) => a.finishTime - b.finishTime)
+
+    return{
+        raceId,
+        distance,
+        raceResult
+    }
+}
+
+
 
 export const useRaceStore = defineStore(
     'race',
@@ -34,7 +62,7 @@ export const useRaceStore = defineStore(
             racingHorses: [],
             distances: [1200, 1400, 1600, 1800, 2000, 2200],
             currentRace: 0,
-            leaderbord: [],
+            raceResults: [],
         }),
 
         actions: {
@@ -48,6 +76,14 @@ export const useRaceStore = defineStore(
             chooseHorses(){
                 const shuffledHorses = [...this.horses].sort(() => Math.random() - 0.5) //place horses randomly
                 this.racingHorses = shuffledHorses.slice(0, 10) //take the first 10
+            },
+
+            simulateRaces(){
+                this.raceResults = [] //Clear existing race results
+                for(let i = 0; i < this.distances.length; i++){
+                    const idRaceResult = simulateRace(this.racingHorses, this.distances[i], i + 1)
+                    this.raceResults.push(idRaceResult)
+                }
             }
 
         }

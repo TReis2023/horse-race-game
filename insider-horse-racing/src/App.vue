@@ -28,8 +28,8 @@ const horseListOpen = ref(true)
     </aside>
 
 
-    <aside class="race-horse">
-      <button v-if="raceStore.horses.length > 0" @click="raceStore.chooseHorses">Choose Racing Horses</button>
+    <aside class="race-horse" v-if="raceStore.horses.length > 0">
+      <button @click="raceStore.chooseHorses">Choose Racing Horses</button>
       <ul class="race-horse-list">
         <li v-for="raceHorse in raceStore.racingHorses" :key="raceHorse.id">
           Horse #{{ raceHorse.id }} 
@@ -40,6 +40,16 @@ const horseListOpen = ref(true)
           {{ raceHorse.color.name }}
         </li>
       </ul>
+    </aside>
+
+    <aside class="race">
+      <button @click="raceStore.simulateRaces">Start Race</button>
+      <div v-for="raceResult in raceStore.raceResults">
+        <h3>Race {{ raceResult.raceId }} - {{ raceResult.distance }} m</h3>
+        <li v-for="horse in raceResult.raceResult" :key="horse.id">
+          Horse {{ horse.id }}
+        </li>
+      </div>
     </aside>
 
   </main>

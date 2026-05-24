@@ -105,7 +105,7 @@ p {
 
 .all-horse {
   font-size: 15px;
-  width: 340px;
+  width: 350px;
   border: solid #ffffff;
   background-color: #08060d;
 }
@@ -121,6 +121,7 @@ p {
   bottom: 24px;
   left: 50%;
   transform: translateX(-50%);
+  border: solid #ffffff;
 }
 
 .race-horse-list {
@@ -128,5 +129,16 @@ p {
   padding: 0;
   margin: 16px 0 0;
   display: flex;
+}
+
+.race{
+  max-height: 350px;
+  overflow-y: auto;
+  font-size: 15px;
+  position: fixed;
+  bottom: 30%;
+  left: 90%;
   border: solid #ffffff;
+  list-style: none;
+  padding: 0;
 }
