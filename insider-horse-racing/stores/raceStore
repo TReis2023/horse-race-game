@@ -26,7 +26,7 @@ function generateHorse(i){
 }
 
 function simulateHorseRace(horse, distance){
-    const edgePhase = 250
+    const edgePhase = 200
     const middlePhase = distance - edgePhase * 2
     const edgeSpeed = horse.condition * 0.5 + Math.random() * 150
     const middleSpeed = 1.5 * (horse.condition) + 0.5 * (Math.random() * 100)
@@ -52,6 +52,39 @@ function simulateRace(racingHorses, distance, raceId){
     }
 }
 
+function buildRaceTiles(distance){
+    const totalTiles = distance / 200 //every race is a multiple of 200
+    return Array.from({length: totalTiles}, (_, index) => {
+        if(index === 0){
+            return{
+                id: index,
+                type: "start",
+            }
+        }
+
+        if(index === totalTiles - 1){
+            return{
+                id: index,
+                type: "finish",
+            }
+        }
+
+        if(index === 1 || index === totalTiles - 2){
+            return{
+                id: index,
+                type: "edge",
+            }
+        }
+
+        return{
+            id: index,
+            type: "middle",
+        }
+    })
+
+
+}
+
 
 
 export const useRaceStore = defineStore(
@@ -63,11 +96,15 @@ export const useRaceStore = defineStore(
             distances: [1200, 1400, 1600, 1800, 2000, 2200],
             currentRace: 0,
             raceResults: [],
+            raceTiles: [],
+            currentRaceResult: null,
+            raceStatus: "idle",
         }),
 
         actions: {
             generateHorses() {
                 this.horses = [] //Clear the existing horses
+                this.racingHorses = []
                 for(let i = 0; i < 20; i++){
                     this.horses.push(generateHorse(i))
                 }
@@ -78,12 +115,53 @@ export const useRaceStore = defineStore(
                 this.racingHorses = shuffledHorses.slice(0, 10) //take the first 10
             },
 
+            startTournament(){
+                this.currentRace = 0
+                this.raceResults = []
+                this.prepareCurrentRace()
+            },
+
+            prepareCurrentRace(){
+                this.chooseHorses()
+                this.generateRace()
+                this.currentRaceResult = null
+                this.raceStatus = "ready"
+
+            },
+
+            runCurrentRace(){
+                const distance = this.distances[this.currentRace]
+                const result = simulateRace(this.racingHorses, distance, this.currentRace + 1)
+                this.currentRaceResult = result
+                this.raceResults.push(result)
+                if(this.currentRace >= this.distances.length - 1){
+                    this.raceStatus = "tournamentFinished"
+                }else{
+                    this.raceStatus = "finished"
+                }
+            },
+
+            nextRace(){
+                if(this.currentRace >= this.distances.length - 1){
+                    return
+                }
+
+                this.currentRace++
+                this.prepareCurrentRace()
+
+            },
+
             simulateRaces(){
                 this.raceResults = [] //Clear existing race results
                 for(let i = 0; i < this.distances.length; i++){
                     const idRaceResult = simulateRace(this.racingHorses, this.distances[i], i + 1)
                     this.raceResults.push(idRaceResult)
                 }
+            },
+
+            generateRace() {
+                const curDistance = this.distances[this.currentRace]
+                this.raceTiles = buildRaceTiles(curDistance)
             }
 
         }

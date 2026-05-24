@@ -104,15 +104,26 @@ p {
 }
 
 .all-horse {
+  padding: 0;
+  position: fixed;
   font-size: 15px;
-  width: 350px;
+  width: 220px;
+  top: 5%;
+  max-height: 600px;
+  overflow-y: auto;
   border: solid #ffffff;
   background-color: #08060d;
 }
 
+.full-horse-list{
+  padding-left: 0;
+
+}
+
 .toggle-horse-list {
-  position: absolute;
-  left: 1%;
+  position: fixed;
+  left: 5px;
+  top: 10px;
 }
 
 .race-horse {
@@ -131,14 +142,70 @@ p {
   display: flex;
 }
 
-.race{
-  max-height: 350px;
+.race-results{
+  max-height: 500px;
+  width: 150px;
   overflow-y: auto;
   font-size: 15px;
   position: fixed;
-  bottom: 30%;
-  left: 90%;
+  top: 10%;
+  right: 1%;
   border: solid #ffffff;
   list-style: none;
   padding: 0;
+}
+
+.race-board{
+  position: fixed;
+  top: 12opx;
+  left: 240px;
+  right: 200px;
+  display: flex;
+  flex-direction: column;
+  border: 2px solid #ffffff;
+}
+
+.race-lane{
+  display: grid;
+  grid-template-columns: 64px 1fr;
+}
+
+.lane-label{
+  display: grid;
+  place-items: center;
+  border-right: solid 1px #ffffff;
+}
+
+.lane-tiles{
+  display: grid;
+  grid-template-columns: repeat(var(--tile-count), 1fr);
+
+}
+
+.tile-type{
+  display: grid;
+  place-items: center;
+  border-right: solid 1px #ffffff;
+}
+
+.tile-type.start {
+  background: #2aa63e;
+}
+
+.tile-type.edge {
+  background: #7c2d12;
+}
+
+.tile-type.middle {
+  background: #1d4ed8;
+}
+
+.tile-type.finish {
+  background: #d72638;
+}
+
+.restart-button{
+  position: fixed;
+  bottom: 20%;
+  left: 45%;
 }
