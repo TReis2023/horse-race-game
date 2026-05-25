@@ -26,15 +26,22 @@ function generateHorse(i){
 }
 
 function simulateHorseRace(horse, distance){
-    const edgePhase = 200
-    const middlePhase = distance - edgePhase * 2
+    const tileSize = 200
+    const totalTiles = distance / tileSize
+    const edgetiles = 4
+    const middleTiles = totalTiles - edgetiles
     const edgeSpeed = horse.condition * 0.5 + Math.random() * 150
+    const edgeTime = tileSize / edgeSpeed
     const middleSpeed = 1.5 * (horse.condition) + 0.5 * (Math.random() * 100)
-    const finishTime = (middlePhase / middleSpeed) + ((2 * edgePhase) / edgeSpeed)
+    const middleTime = tileSize / middleSpeed
+    const finishTime = edgetiles * edgeTime + middleTiles * middleTime
 
     return{
         ...horse,
         finishTime,
+        edgeSpeed,
+        edgeTime,
+        middleTime,
     }
 }
 
@@ -81,14 +88,30 @@ function buildRaceTiles(distance){
             type: "middle",
         }
     })
+}
 
+function wait(seconds){
+    let timeoutId
+    let resolvePromise
 
+    const promise = new Promise((resolve) => {
+        resolvePromise = resolve
+        timeoutId = setTimeout(resolve, seconds * 1000)
+    })
+
+    return {
+        promise,
+        cancel() {
+        clearTimeout(timeoutId)
+        resolvePromise()
+        },
+    }
 }
 
 
 
 export const useRaceStore = defineStore(
-    'race',
+    "race",
     {
         state: () => ({
             horses: [],
@@ -99,6 +122,9 @@ export const useRaceStore = defineStore(
             raceTiles: [],
             currentRaceResult: null,
             raceStatus: "idle",
+            horsePositions: {},
+            activeWaits: [],
+            isSkippingRace: false,
         }),
 
         actions: {
@@ -115,6 +141,43 @@ export const useRaceStore = defineStore(
                 this.racingHorses = shuffledHorses.slice(0, 10) //take the first 10
             },
 
+            async animateHorse(horse){
+                this.horsePositions[horse.id] = 0
+
+                for (let i = 0; i < this.raceTiles.length; i++) {
+                    if (this.isSkippingRace) {
+                    this.horsePositions[horse.id] = this.raceTiles.length
+                    return
+                    }
+
+                    const tile = this.raceTiles[i]
+                    const tileTime = tile.type === "middle" ? horse.middleTime : horse.edgeTime
+                    const activeWait = wait(tileTime)
+                    this.activeWaits.push(activeWait)
+                    await activeWait.promise
+                    this.activeWaits = this.activeWaits.filter((item) => item !== activeWait)
+                    if (this.isSkippingRace) {
+                    this.horsePositions[horse.id] = this.raceTiles.length
+                    return
+                    }
+                    this.horsePositions[horse.id] = i + 1
+                }
+            },
+
+            skipRace(){
+                this.isSkippingRace = true
+
+                for (const horse of this.racingHorses) {
+                    this.horsePositions[horse.id] = this.raceTiles.length
+                }
+
+                for (const activeWait of this.activeWaits) {
+                    activeWait.cancel()
+                }
+
+                this.activeWaits = []
+            },
+
             startTournament(){
                 this.currentRace = 0
                 this.raceResults = []
@@ -122,17 +185,23 @@ export const useRaceStore = defineStore(
             },
 
             prepareCurrentRace(){
+                this.isSkippingRace = false
+                this.activeWaits = []
                 this.chooseHorses()
                 this.generateRace()
+                this.horsePositions = {}
                 this.currentRaceResult = null
                 this.raceStatus = "ready"
 
             },
 
-            runCurrentRace(){
+            async runCurrentRace(){
                 const distance = this.distances[this.currentRace]
                 const result = simulateRace(this.racingHorses, distance, this.currentRace + 1)
                 this.currentRaceResult = result
+                this.raceStatus = "running"
+                this.horsePositions = {}
+                await Promise.all(result.raceResult.map((horse) => this.animateHorse(horse)))
                 this.raceResults.push(result)
                 if(this.currentRace >= this.distances.length - 1){
                     this.raceStatus = "tournamentFinished"

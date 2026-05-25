@@ -30,6 +30,7 @@ const horseListOpen = ref(true)
 
     <aside class="race-horse" v-if="raceStore.horses.length > 0">
       <button v-if="raceStore.raceStatus === 'idle'" @click="raceStore.startTournament">Start Tournament</button>
+      <h3>Racing Horses</h3>
       <ul class="race-horse-list">
         <li v-for="raceHorse in raceStore.racingHorses" :key="raceHorse.id">
           Horse #{{ raceHorse.id }} 
@@ -47,9 +48,14 @@ const horseListOpen = ref(true)
       <button v-if="raceStore.raceStatus === 'finished'" @click="raceStore.nextRace">Next Race</button>
       <div v-for="raceResult in raceStore.raceResults">
         <h3>Race {{ raceResult.raceId }} - {{ raceResult.distance }} m</h3>
-        <li v-for="horse in raceResult.raceResult" :key="horse.id">
-          Horse {{ horse.id }}
-        </li>
+        <ol>
+          <li v-for="horse in raceResult.raceResult" :key="horse.id">
+            <span class="color-name" :style="{ color: horse.color.value}">
+              ■
+            </span>
+            Horse #{{ horse.id }}
+          </li>
+        </ol>
       </div>
     </aside>
     <section class="race-board">
@@ -61,11 +67,18 @@ const horseListOpen = ref(true)
           <div v-for="tile in raceStore.raceTiles" :key="tile.id" class="tile-type" :class="tile.type" >
             {{ tile.type }}
           </div>
+          <div class="horse-sprite" :style="{
+            backgroundColor: horse.color.value,
+            left: `${((raceStore.horsePositions[horse.id] ?? 0) / raceStore.raceTiles.length) * 100}%`
+          }">
+          #{{ horse.id }}
+          </div>
         </div>
       </div>
     </section>
 
     <button class="restart-button" v-if="raceStore.raceStatus === 'tournamentFinished'" @click="raceStore.startTournament">Restart Tournament</button>
+    <button v-if="raceStore.raceStatus === 'running'" class="fast-forward" @click="raceStore.skipRace">▶▶ Skip Race</button>
 
   </main>
 
