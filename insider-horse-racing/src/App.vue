@@ -5,6 +5,7 @@ import { ref } from 'vue';
 
 const raceStore = useRaceStore()
 const horseListOpen = ref(true)
+const resultListOpen = ref(true)
 
 </script>
 
@@ -27,26 +28,11 @@ const horseListOpen = ref(true)
       </ul>
     </aside>
 
-
-    <aside class="race-horse" v-if="raceStore.horses.length > 0">
-      <button v-if="raceStore.raceStatus === 'idle'" @click="raceStore.startTournament">Start Tournament</button>
-      <h3>Racing Horses</h3>
-      <ul class="race-horse-list">
-        <li v-for="raceHorse in raceStore.racingHorses" :key="raceHorse.id">
-          Horse #{{ raceHorse.id }} 
-          Color: 
-          <span class="color-name" :style="{ color: raceHorse.color.value}">
-            ■
-          </span>
-          {{ raceHorse.color.name }}
-        </li>
-      </ul>
-    </aside>
+    <button class="race-buttons" v-if="raceStore.raceStatus === 'idle' && raceStore.horses.length > 0" @click="raceStore.startTournament">Start Tournament</button>
 
     <aside class="race-results" v-if="raceStore.racingHorses.length > 0">
-      <button v-if="raceStore.raceStatus === 'ready'" @click="raceStore.runCurrentRace">Start Race</button>
-      <button v-if="raceStore.raceStatus === 'finished'" @click="raceStore.nextRace">Next Race</button>
-      <div v-for="raceResult in raceStore.raceResults">
+      <button v-if="raceStore.raceResults.length > 0" class="toggle-result-list" @click="resultListOpen = !resultListOpen">◰</button>
+      <div v-if="resultListOpen" v-for="raceResult in raceStore.raceResults">
         <h3>Race {{ raceResult.raceId }} - {{ raceResult.distance }} m</h3>
         <ol>
           <li v-for="horse in raceResult.raceResult" :key="horse.id">
@@ -61,25 +47,28 @@ const horseListOpen = ref(true)
     <section class="race-board">
       <div class="race-lane" v-for="horse in raceStore.racingHorses" :key="horse.id">
         <div class="lane-label">
+          <span class="color-name" :style="{ color: horse.color.value}">
+            ■
+          </span>
           #{{ horse.id }}
         </div>
         <div class="lane-tiles" :style="{'--tile-count': raceStore.raceTiles.length}">
           <div v-for="tile in raceStore.raceTiles" :key="tile.id" class="tile-type" :class="tile.type" >
-            {{ tile.type }}
           </div>
           <div class="horse-sprite" :style="{
-            backgroundColor: horse.color.value,
+            '--horse-color': horse.color.value,
             left: `${((raceStore.horsePositions[horse.id] ?? 0) / raceStore.raceTiles.length) * 100}%`
           }">
-          #{{ horse.id }}
+          <img class="horse-outline" src="/horse_outline.png" alt="">
           </div>
         </div>
       </div>
     </section>
 
-    <button class="restart-button" v-if="raceStore.raceStatus === 'tournamentFinished'" @click="raceStore.startTournament">Restart Tournament</button>
-    <button v-if="raceStore.raceStatus === 'running'" class="fast-forward" @click="raceStore.skipRace">▶▶ Skip Race</button>
-
+    <button class="race-buttons" v-if="raceStore.raceStatus === 'tournamentFinished'" @click="raceStore.startTournament">Restart Tournament</button>
+    <button class="race-buttons" v-if="raceStore.raceStatus === 'running'" @click="raceStore.skipRace">▶▶ Skip Race</button>
+    <button class="race-buttons" v-if="raceStore.raceStatus === 'ready'" @click="raceStore.runCurrentRace">Start Race</button>
+    <button class="race-buttons" v-if="raceStore.raceStatus === 'finished'" @click="raceStore.nextRace">Next Race</button>
   </main>
 
 </template>

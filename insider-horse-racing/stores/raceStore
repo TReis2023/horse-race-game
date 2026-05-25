@@ -2,6 +2,7 @@ import {defineStore} from "pinia";
 
 const horseColors = [
     {name: "Red", value: "#FB2C36"},
+    {name: "Burgundy", value: "#660033"},
     {name: "Orange", value: "#FF692A"},
     {name: "Yellow", value: "#FFDF20"},
     {name: "Lime", value: "#BBF451"},
@@ -9,11 +10,11 @@ const horseColors = [
     {name: "Cyan", value: "#46ECD5"},
     {name: "Blue", value: "#155DFC"},
     {name: "Purple", value: "#7008E7"},
-    {name: "Pink", value: "#ED6AFF"},
+    {name: "Magenta", value: "#FD3DB5"},
+    {name: "Pink", value: "#f28fff"},
     {name: "Brown", value: "#7E2A0C"},
     {name: "White", value: "#e9f4ff"},
     {name: "Gray", value: "#90A1B9"},
-    {name: "Black", value: "#0F172B"},
 ]
 
 
@@ -21,7 +22,7 @@ function generateHorse(i){
     return{
         id: i,
         condition: Math.floor(Math.random() * 100) + 1,
-        color: horseColors[Math.floor(Math.random() * 13)]
+        color: horseColors[Math.floor(Math.random() * horseColors.length)]
     }
 }
 
@@ -30,9 +31,9 @@ function simulateHorseRace(horse, distance){
     const totalTiles = distance / tileSize
     const edgetiles = 4
     const middleTiles = totalTiles - edgetiles
-    const edgeSpeed = horse.condition * 0.5 + Math.random() * 150
+    const edgeSpeed = horse.condition * 0.5 + Math.random() * 200 + 30
     const edgeTime = tileSize / edgeSpeed
-    const middleSpeed = 1.5 * (horse.condition) + 0.5 * (Math.random() * 100)
+    const middleSpeed = 1.5 * (horse.condition) + (Math.random() * 75) + 30
     const middleTime = tileSize / middleSpeed
     const finishTime = edgetiles * edgeTime + middleTiles * middleTime
 
@@ -55,34 +56,32 @@ function simulateRace(racingHorses, distance, raceId){
     return{
         raceId,
         distance,
-        raceResult
+        raceResult, 
     }
 }
 
 function buildRaceTiles(distance){
     const totalTiles = distance / 200 //every race is a multiple of 200
     return Array.from({length: totalTiles}, (_, index) => {
+        //start and finish tiles are for visuals only they work as edge tiles in the race
         if(index === 0){
             return{
                 id: index,
                 type: "start",
             }
         }
-
         if(index === totalTiles - 1){
             return{
                 id: index,
                 type: "finish",
             }
         }
-
         if(index === 1 || index === totalTiles - 2){
             return{
                 id: index,
                 type: "edge",
             }
         }
-
         return{
             id: index,
             type: "middle",
@@ -93,7 +92,6 @@ function buildRaceTiles(distance){
 function wait(seconds){
     let timeoutId
     let resolvePromise
-
     const promise = new Promise((resolve) => {
         resolvePromise = resolve
         timeoutId = setTimeout(resolve, seconds * 1000)
@@ -101,7 +99,7 @@ function wait(seconds){
 
     return {
         promise,
-        cancel() {
+        cancel() { //used to skip the races
         clearTimeout(timeoutId)
         resolvePromise()
         },
@@ -137,7 +135,7 @@ export const useRaceStore = defineStore(
             },
 
             chooseHorses(){
-                const shuffledHorses = [...this.horses].sort(() => Math.random() - 0.5) //place horses randomly
+                const shuffledHorses = [...this.horses].sort(() => Math.random() - 0.5) //shuffle the horses
                 this.racingHorses = shuffledHorses.slice(0, 10) //take the first 10
             },
 
@@ -166,19 +164,17 @@ export const useRaceStore = defineStore(
 
             skipRace(){
                 this.isSkippingRace = true
-
                 for (const horse of this.racingHorses) {
                     this.horsePositions[horse.id] = this.raceTiles.length
                 }
-
                 for (const activeWait of this.activeWaits) {
                     activeWait.cancel()
                 }
-
                 this.activeWaits = []
             },
 
             startTournament(){
+                this.generateHorses()
                 this.currentRace = 0
                 this.raceResults = []
                 this.prepareCurrentRace()
