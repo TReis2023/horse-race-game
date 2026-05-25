@@ -1,4 +1,4 @@
-# Horse Race Game
+# Horse Race Game 
 This project uses Vue 3 as it's the modern version with better support with everything such as Pinia.
 
 ## Horse Generation
